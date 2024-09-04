@@ -27,13 +27,12 @@
 #  fpylll : doesn't work in Windows
 #           -> apt install python3-fpylll
 
-
-import argparse
 import json
 import random
+import argparse
+import ecdsa_lib
 
 from fpylll import LLL, BKZ, IntegerMatrix
-import ecdsa_lib
 
 
 # DATA Format of the JSON file :
@@ -98,12 +97,12 @@ def test_result(mat, target_pubkey, curve):
 
 
 def build_matrix(sigs, curve, num_bits, bits_type, hash_val):
-    num_sigs = len(sigs)
-    n_order = ecdsa_lib.curve_n(curve)
+    num_sigs   = len(sigs)
+    n_order    = ecdsa_lib.curve_n(curve)
     curve_card = 2 ** ecdsa_lib.curve_size(curve)
-    lattice = IntegerMatrix(num_sigs + 2, num_sigs + 2)
-    kbi = 2 ** num_bits
-    inv = ecdsa_lib.inverse_mod
+    lattice    = IntegerMatrix(num_sigs + 2, num_sigs + 2)
+    kbi        = 2 ** num_bits
+    inv        = ecdsa_lib.inverse_mod
     if hash_val is not None:
         hash_i = hash_val
     if bits_type == "LSB":
@@ -192,7 +191,7 @@ def recover_private_key(
         print("Solving matrix ...")
         for effort in RECOVERY_SEQUENCE:
             lattice = reduce_lattice(lattice, effort)
-            res = test_result(lattice, pub_key, curve)
+            res     = test_result(lattice, pub_key, curve)
             if res:
                 return res
         loop_var = loop
@@ -223,10 +222,10 @@ def lattice_attack_cli(file_name, loop):
     else:
         hash_int = None  # Signal to use a hash per sig, sig data
     curve_string = data["curve"]
-    data_type = data["known_type"]
-    known_bits = data["known_bits"]
-    signatures = data["signatures"]
-    q_target = data["public_key"]
+    data_type    = data["known_type"]
+    known_bits   = data["known_bits"]
+    signatures   = data["signatures"]
+    q_target     = data["public_key"]
     if not ecdsa_lib.check_publickey(q_target, curve_string):
         print(
             f"Public key data invalid, not on the given {curve_string.upper()} curve."
